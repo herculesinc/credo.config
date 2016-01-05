@@ -1,6 +1,6 @@
 {
   "name": "@credo/config",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Config file loader for Credo application",
   "main": "index.js",
   "repository": {

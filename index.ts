@@ -9,9 +9,10 @@ var settings: Settings;
 var configDir: string = process.env.CONFIG_DIR || path.join(process.cwd(), 'config');
 
 var DEFAULTS = {
-    port: process.env.PORT || 3000,
-    env: process.env.NODE_ENV || 'development',
-    errors: {
+    port    : process.env.PORT || 3000,
+    env     : process.env.NODE_ENV || 'development',
+    shard   : process.env.SHARD_ID || 1,
+    errors  : {
         startUpErrorExitCode: 1,
         shutDownTimeout: 3000
     }
@@ -20,9 +21,10 @@ var DEFAULTS = {
 // INTERFACE DEFINITIONS
 // ================================================================================================
 export interface Settings {
-    port: number;
-    env: string;
-    errors: {
+    port    : number;
+    env     : string;
+    shard   : number;
+    errors  : {
         startUpErrorExitCode: number;
         shutDownTimeout: number;
     };
