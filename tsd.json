@@ -7,6 +7,9 @@
   "installed": {
     "node/node.d.ts": {
       "commit": "421d6610bdb09e1015b71f5991d7a68d079eca21"
+    },
+    "object-path/object-path.d.ts": {
+      "commit": "7ce80dafc0df189d61950e80e04548d8304d1538"
     }
   }
 }

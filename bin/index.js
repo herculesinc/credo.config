@@ -3,6 +3,8 @@
 // ================================================================================================
 var fs = require('fs');
 var path = require('path');
+var crypto = require('crypto');
+var objectPath = require('object-path');
 // MODULE VARIABLES
 // ================================================================================================
 var settings;
@@ -31,14 +33,34 @@ function getSettings() {
         var file = path.join(configDir, DEFAULTS.env) + '.json';
         console.info('Reading configuration from ' + file);
         var obj = JSON.parse(fs.readFileSync(file, 'utf8').toString());
+        // create new settings object
+        settings = Object.assign({}, DEFAULTS, obj);
+        // decrypt secrets
+        var key = settings.env === 'development' || settings.env === 'staging'
+            ? settings.env
+            : process.env.SECRET_KEY;
+        file = path.join(configDir, DEFAULTS.env) + '.secrets';
+        console.info('Reading secrets from ' + file);
+        var secrets = JSON.parse(decryptFile(file, key));
+        // set secrets in settings object
+        for (var prop in secrets) {
+            objectPath.set(settings, prop, secrets[prop]);
+        }
     }
     catch (err) {
         err.message = 'Failed to read config file: ' + err.message;
         throw err;
     }
-    // create new settings object
-    settings = Object.assign({}, DEFAULTS, obj);
     return settings;
 }
 exports.getSettings = getSettings;
+// HELPER FUNCTIONS
+// ================================================================================================
+function decryptFile(src, key) {
+    var contents = fs.readFileSync(src).toString();
+    var decipher = crypto.createDecipher('aes-256-cbc', key);
+    var decrypted = decipher.update(contents, 'base64', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
 //# sourceMappingURL=index.js.map
