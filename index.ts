@@ -8,7 +8,6 @@ import * as objectPath from 'object-path';
 // MODULE VARIABLES
 // ================================================================================================
 var settings: Settings;
-var configDir = process.env.CONFIG_DIR || path.join(process.cwd(), 'config');
 
 var DEFAULTS = {
     port    : process.env.PORT || 3000,
@@ -45,6 +44,9 @@ export function getSettings() : Settings {
 
     // otherwise, read remaining settings from the configuration file
     try {
+        var configDir = getConfigDir();
+        if (!configDir) throw new Error('config directory could not be found');
+        
         var file = path.join(configDir, DEFAULTS.env) + '.json';
         console.info('Reading configuration from ' + file);
         var obj = JSON.parse(fs.readFileSync(file, 'utf8').toString());
@@ -75,6 +77,27 @@ export function getSettings() : Settings {
 
 // HELPER FUNCTIONS
 // ================================================================================================
+function getConfigDir(): string {
+    var basePath = process.cwd();
+    var subPath = process.env.CONFIG_DIR || 'config';
+    var configDir = path.join(basePath, subPath);
+    
+    var i = 0;
+    while (i < 100) {
+        try {
+            fs.accessSync(configDir)
+            return configDir;
+        }
+        catch (error) {
+            let newBase = path.join(basePath, '..');
+            if (newBase === basePath) return undefined;
+            basePath = newBase;
+            configDir = path.join(basePath, subPath);
+        }
+        i++;
+    }
+}
+
 function decryptFile(src: string, key: string): string {
     var contents = fs.readFileSync(src).toString();
     var decipher = crypto.createDecipher('aes-256-cbc', key);
