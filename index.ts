@@ -55,9 +55,7 @@ export function getSettings() : Settings {
         settings = Object.assign({}, DEFAULTS, obj);
         
         // decrypt secrets
-        var key = settings.env === 'development' || settings.env === 'staging'
-            ? settings.env
-            : process.env.SECRET_KEY;
+        var key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
         file = path.join(configDir, DEFAULTS.env) + '.secrets';
         console.info('Reading secrets from ' + file);
         var secrets = JSON.parse(decryptFile(file, key));

@@ -1,10 +1,10 @@
 "use strict";
 // IMPORTS
 // ================================================================================================
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var objectPath = require('object-path');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const objectPath = require('object-path');
 // MODULE VARIABLES
 // ================================================================================================
 var settings;
@@ -38,9 +38,7 @@ function getSettings() {
         // create new settings object
         settings = Object.assign({}, DEFAULTS, obj);
         // decrypt secrets
-        var key = settings.env === 'development' || settings.env === 'staging'
-            ? settings.env
-            : process.env.SECRET_KEY;
+        var key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
         file = path.join(configDir, DEFAULTS.env) + '.secrets';
         console.info('Reading secrets from ' + file);
         var secrets = JSON.parse(decryptFile(file, key));
