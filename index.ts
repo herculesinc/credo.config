@@ -4,39 +4,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as objectPath from 'object-path';
+import * as stripComments from 'strip-json-comments';
 
 // MODULE VARIABLES
 // ================================================================================================
 var settings: Settings;
 
-var DEFAULTS = {
-    port    : process.env.PORT || 3000,
-    env     : process.env.NODE_ENV || 'development',
-    shard   : process.env.SHARD_ID || 1,
-    errors  : {
-        startUpErrorExitCode: 1,
-        shutDownTimeout: 3000
-    }
-}
-
 // INTERFACE DEFINITIONS
 // ================================================================================================
 export interface Settings {
-    port    : number;
     env     : string;
-    shard   : number;
-    errors  : {
-        startUpErrorExitCode: number;
-        shutDownTimeout: number;
-    };
 }
 
 // EXPORTED FUNCTIONS
 // ================================================================================================
-export function getDefaults() : Settings {
-    return DEFAULTS;
-}
-
 export function getSettings() : Settings {
 
     // if config settings have already been read, just return them
@@ -44,24 +25,25 @@ export function getSettings() : Settings {
 
     // otherwise, read remaining settings from the configuration file
     try {
-        var configDir = getConfigDir();
+        const env = process.env.NODE_ENV || 'development';
+
+        const configDir = getConfigDir();
         if (!configDir) throw new Error('config directory could not be found');
         
-        var file = path.join(configDir, DEFAULTS.env) + '.json';
-        console.info('Reading configuration from ' + file);
-        var obj = JSON.parse(fs.readFileSync(file, 'utf8').toString());
-        
-        // create new settings object
-        settings = Object.assign({}, DEFAULTS, obj);
+        const configFile = path.join(configDir, env) + '.json';
+        console.info('Reading configuration from ' + configFile);
+        const configContent = fs.readFileSync(configFile, 'utf8').toString();
+        settings = JSON.parse(stripComments(configContent));
+        settings.env = env;
         
         // decrypt secrets
-        var key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
-        file = path.join(configDir, DEFAULTS.env) + '.secrets';
-        console.info('Reading secrets from ' + file);
-        var secrets = JSON.parse(decryptFile(file, key));
+        const key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
+        const secretsFile = path.join(configDir, env) + '.secrets';
+        console.info('Reading secrets from ' + secretsFile);
+        const secrets = JSON.parse(decryptFile(secretsFile, key));
         
         // set secrets in settings object
-        for (var prop in secrets) {
+        for (let prop in secrets) {
             objectPath.set(settings, prop, secrets[prop]);
         }
     }

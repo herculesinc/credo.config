@@ -5,45 +5,34 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const objectPath = require('object-path');
+const stripComments = require('strip-json-comments');
 // MODULE VARIABLES
 // ================================================================================================
 var settings;
-var DEFAULTS = {
-    port: process.env.PORT || 3000,
-    env: process.env.NODE_ENV || 'development',
-    shard: process.env.SHARD_ID || 1,
-    errors: {
-        startUpErrorExitCode: 1,
-        shutDownTimeout: 3000
-    }
-};
 // EXPORTED FUNCTIONS
 // ================================================================================================
-function getDefaults() {
-    return DEFAULTS;
-}
-exports.getDefaults = getDefaults;
 function getSettings() {
     // if config settings have already been read, just return them
     if (settings)
         return settings;
     // otherwise, read remaining settings from the configuration file
     try {
-        var configDir = getConfigDir();
+        const env = process.env.NODE_ENV || 'development';
+        const configDir = getConfigDir();
         if (!configDir)
             throw new Error('config directory could not be found');
-        var file = path.join(configDir, DEFAULTS.env) + '.json';
-        console.info('Reading configuration from ' + file);
-        var obj = JSON.parse(fs.readFileSync(file, 'utf8').toString());
-        // create new settings object
-        settings = Object.assign({}, DEFAULTS, obj);
+        const configFile = path.join(configDir, env) + '.json';
+        console.info('Reading configuration from ' + configFile);
+        const configContent = fs.readFileSync(configFile, 'utf8').toString();
+        settings = JSON.parse(stripComments(configContent));
+        settings.env = env;
         // decrypt secrets
-        var key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
-        file = path.join(configDir, DEFAULTS.env) + '.secrets';
-        console.info('Reading secrets from ' + file);
-        var secrets = JSON.parse(decryptFile(file, key));
+        const key = (settings.env === 'production' ? process.env.SECRET_KEY : settings.env);
+        const secretsFile = path.join(configDir, env) + '.secrets';
+        console.info('Reading secrets from ' + secretsFile);
+        const secrets = JSON.parse(decryptFile(secretsFile, key));
         // set secrets in settings object
-        for (var prop in secrets) {
+        for (let prop in secrets) {
             objectPath.set(settings, prop, secrets[prop]);
         }
     }

@@ -10,6 +10,9 @@
     },
     "object-path/object-path.d.ts": {
       "commit": "7ce80dafc0df189d61950e80e04548d8304d1538"
+    },
+    "strip-json-comments/strip-json-comments.d.ts": {
+      "commit": "2c65d5ca7267fda6d49a3b447c8b089632fb5358"
     }
   }
 }

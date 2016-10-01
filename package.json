@@ -16,7 +16,8 @@
     "node": "6.4.x"
   },
   "dependencies": {
-    "object-path": "0.11.2"
+    "object-path": "0.11.x",
+    "strip-json-comments": "2.0.x"
   },
   "devDependencies": {
     "del": "2.2.x",
